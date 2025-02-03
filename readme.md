@@ -2,9 +2,6 @@ BÀI THỰC HÀNH BUỔI 1
 BT1: Tạo một static library (.a)
 BT2: Tạo một shared library (.so)
 Lưu ý: Sử dụng Makefile thực hiện tự động build tất cả các bước.
------
-cái nào gọi cái nào trong quá trình build, tại sao khi run file thực thi lại ra kết quả như thế
-
 
 -----
 Một số thông tin
