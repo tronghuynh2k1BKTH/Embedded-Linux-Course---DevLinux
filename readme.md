@@ -27,5 +27,11 @@ Một số thông tin
     .h
     function.c
     -> chỉ cần include .h này vào main là dùng được function trong main
+
+- after make clean and make all
+    run on server
+    ./bin/shared_libs
+    ./bin/static_libs
+    the resutl, at main, call function that is writed on share lib
 -----
 my Notion: https://duancuahuynh.notion.site/lession-1-18f3529151088071bf44d92bd65da83c?pvs=4
