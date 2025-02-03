@@ -1,0 +1,2 @@
+void AlienHello();
+void EarthHello();
