@@ -1,3 +1,4 @@
+```markdown
 # BÀI THỰC HÀNH BUỔI 1
 
 ## BT1: Tạo một static library (.a)
@@ -23,5 +24,23 @@
   ```sh
   gcc $(OBJ_DIR)/main.o $(LIB_SHARED_DIR)/libhelloshared.so -o $(BIN_DIR)/shared_libs
   gcc $(OBJ_DIR)/main.o -L$(LIB_STATIC_DIR) -lhello -o $(BIN_DIR)/static_libs
+  ```
+  - `-lhello`: Trình liên kết sẽ tìm kiếm một tệp có tên `libhello.so` (hoặc `libhello.a` nếu là thư viện tĩnh) trong thư mục được chỉ định bởi `-L`.
 
-My Notion ```
+- **File .h khai báo, một file .c khác dùng để định nghĩa, và một hàm main để thực thi một nhiệm vụ nào đó:**
+  - `.h`
+  - `function.c`
+  - Chỉ cần include `.h` này vào `main` là dùng được function trong `main`.
+
+- **Sau khi chạy `make clean` và `make all`:**
+  - Chạy trên server:
+    ```sh
+    ./bin/shared_libs
+    ./bin/static_libs
+    ```
+  - Kết quả: Tại `main`, gọi function được viết trong thư viện chia sẻ.
+
+---
+
+[My Notion](https://duancuahuynh.notion.site/lession-1-18f3529151088071bf44d92bd65da83c?pvs=4)
+```
