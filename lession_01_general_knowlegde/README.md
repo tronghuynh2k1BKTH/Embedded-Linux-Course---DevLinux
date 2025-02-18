@@ -1,7 +1,8 @@
 # PRACTICE SESSION 1
 
-## BT1: Create a static library (.a)
-## BT2: Create a shared library (.so)
+BT1: Create a static library (.a)
+
+BT2: Create a shared library (.so)
 
 **Note:** Use Makefile to automate all build steps.
 

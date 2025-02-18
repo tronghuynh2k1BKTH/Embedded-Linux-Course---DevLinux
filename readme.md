@@ -1,7 +1,6 @@
 ```markdown
 # Git Commands
 
-```sh
 git init
 git add .
 git commit -m ""
@@ -22,9 +21,9 @@ git push -u origin main -f
 help-github-import:
   @echo "Refer to these instructions for adding locally hosted code to GitHub:"
   @echo "https://docs.github.com/en/migrations/importing-source-code/using-the-command-line-to-import-source-code/adding-locally-hosted-code-to-github"
-```
 
-.PHONY: init add commit remote-add remote-verify push force-push help-github-import
+init add commit remote-add remote-verify push force-push help-github-import
+```
 
 # Using SFTP to Remote to Ubuntu Server
 
@@ -40,7 +39,3 @@ help-github-import:
 
   ```sh
   git clone repo ssh
-  ```
-
-  - Done
-```
