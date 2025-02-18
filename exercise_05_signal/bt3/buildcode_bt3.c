@@ -27,7 +27,7 @@ int main()
     if (pid_child == 0)
     {
         printf("I am child, PID: %d\n", getpid());
-        while(1)
+        while (1)
         {
             pause();
         }
@@ -36,7 +36,7 @@ int main()
     {
         printf("I am parent, PID: %d\n", getpid());
         int parent_count = 0;
-        // Send signal to child per 2 seconds
+        // Send signal to child every 2 seconds
         while (parent_count < 5)
         {
             sleep(2);
@@ -56,18 +56,3 @@ int main()
 
 // gcc -o buildcode_bt3 buildcode_bt3.c
 // ./buildcode_bt3
-// ```
-// output:
-// I am parent, PID: 59982
-// I am child, PID: 59983
-// Received signal from parent, 1 times
-// Received signal from parent, 2 times
-// Received signal from parent, 3 times
-// Received signal from parent, 4 times
-// Parent sent 5 signals, exiting...
-// Received signal from parent, 5 times
-
-// Câu hỏi: Tại sao chúng ta cần sử dụng kill() để gửi tín hiệu trong bài này?
-
-// -> Để gửi tín hiệu từ tiến trình cha đến tiến trình con
-// kill() để gửi tín hiệu đến một process cụ thể.

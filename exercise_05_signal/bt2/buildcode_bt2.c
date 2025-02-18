@@ -3,38 +3,37 @@
 #include <signal.h>
 #include <unistd.h>
 
-int timer_count = 0; // Biến đếm thời gian
+int timer_count = 0; // Timer count variable
 
 void handle_alarm(int sig) {
     timer_count++;  
     printf("Timer: %d seconds\n", timer_count);
 
     if (timer_count >= 15) {
-        printf("Timer reached 10 seconds. Exiting program.\n");
-        exit(0); // Kết thúc chương trình
+        printf("Timer reached 15 seconds. Exiting program.\n");
+        exit(0); // End the program
     }
 
-    alarm(1); // Đặt lại báo động sau 1 giây
+    alarm(1); // Reset the alarm after 1 second
 }
 
 int main() {
-    // Đăng ký xử lý tín hiệu SIGALRM
+    // Register signal handler for SIGALRM
     signal(SIGALRM, handle_alarm);
 
     printf("Starting timer...\n");
     
-    alarm(1); // Kích hoạt SIGALRM sau 1 giây
+    alarm(1); // Trigger SIGALRM after 1 second
 
-    // Giữ chương trình chạy liên tục
+    // Keep the program running continuously
     while (1) {
-        pause(); // Chờ tín hiệu SIGALRM
+        pause(); // Wait for SIGALRM signal
     }
 
     return 0;
 }
 
+// Question: What happens if alarm(1) is not called again in the handler function?
 
-// Câu hỏi: Điều gì xảy ra nếu không gọi lại alarm(1) trong hàm xử lý?
-
-// -> hệ thống sẽ treo và nằm trong while (1) vì không có điều kiện tự kết thúc
-// chương trình, trừ khi có những tín hiệu khác gửi đến chương trình.
+// -> The system will hang and remain in the while (1) loop because there is no condition to terminate
+// the program, unless other signals are sent to the program.

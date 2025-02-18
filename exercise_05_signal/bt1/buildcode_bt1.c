@@ -3,46 +3,46 @@
 #include <signal.h>
 #include <unistd.h>
 
-int sigint_count = 0; // Biến đếm số lần nhận SIGINT
+int sigint_count = 0; // Variable to count the number of SIGINT received
 
 void handle_sigint(int sig) {
-    sigint_count++;  
-    printf("SIGINT đã nhận %d lần \n", sigint_count);
+    sigint_count++;
+    printf("SIGINT received %d times\n", sigint_count);
 
     if (sigint_count >= 3) {
-        printf("Thoát tiến trình sau khi nhận signal interrupt 3 lần.\n");
-        exit(0); // Kết thúc chương trình
+        printf("Exiting process after receiving SIGINT 3 times.\n");
+        exit(0); // Terminate the program
     }
 }
 
 int main() {
-    // Đăng ký xử lý tín hiệu SIGINT bằng signal()
+    // Register the SIGINT signal handler using signal()
     signal(SIGINT, handle_sigint);
 
-    printf("Nhấn Ctrl+C để gửi SIGINT \n");
+    printf("Press Ctrl+C to send SIGINT\n");
 
-    // Vòng lặp vô hạn để giữ chương trình chạy
+    // Infinite loop to keep the program running
     while (1) {
-        sleep(1); // Chờ tín hiệu
+        sleep(1); // Wait for signal
     }
 
     return 0;
 }
 
-// Trong Linux, việc nhấn tổ hợp phím Ctrl + C sẽ gửi tín hiệu SIGINT (Signal Interrupt)
-// đến tiến trình đang chạy. Tín hiệu này sẽ yêu cầu tiến trình dừng hoạt động ngay lập tức.
-// Đây là cách nhanh chóng và hiệu quả để kết thúc một tiến trình từ dòng lệnh mà không cần
-// phải đóng toàn bộ terminal.
+// In Linux, pressing the Ctrl+C key combination sends the SIGINT (Signal Interrupt)
+// signal to the running process. This signal requests the process to stop immediately.
+// This is a quick and effective way to terminate a process from the command line without
+// having to close the entire terminal.
 
-// Nếu một chương trình không đăng ký một trình xử lý tùy chỉnh cho tín hiệu SIGINT
-// (ví dụ, không có hàm cụ thể để xử lý tín hiệu này), hệ điều hành sẽ sử dụng hành
-// động mặc định cho tín hiệu đó. Với SIGINT, hành động mặc định là kết thúc tiến trình hiện tại.
-
+// If a program does not register a custom handler for the SIGINT signal
+// (e.g., does not have a specific function to handle this signal), the operating system
+// will use the default action for that signal. For SIGINT, the default action is to
+// terminate the current process.
 
 -----
-// Câu hỏi: Nếu bỏ qua tín hiệu SIGINT, chuyện gì sẽ xảy ra khi nhấn Ctrl+C?
+// Question: What happens if the SIGINT signal is ignored?
 
-// Để có thể bỏ qua tín hiệu SIGINT có thể đăng kí tín hiệu bỏ qua tín hiệu như sau
+// To ignore the SIGINT signal, you can register to ignore the signal as follows:
 // signal(SIGINT, SIG_IGN);
 
-// Khi đó khi nhấn Ctrl C thì chương trình sẽ không bị kết thúc mà vẫn tiếp tục chạy.
+// In this case, when Ctrl+C is pressed, the program will not be terminated and will continue running.

@@ -1,50 +1,46 @@
-BÀI THỰC HÀNH BUỔI 5
+PRACTICE SESSION 5
 
-BT1. Bắt Tín hiệu SIGINT
-Yêu cầu: Viết một chương trình bắt tín hiệu SIGINT (được gửi khi nhấn Ctrl+C) và in ra thông báo khi nhận được tín hiệu này.
-Sử dụng hàm signal() để đăng ký một hàm xử lý cho tín hiệu SIGINT.
-Trong hàm xử lý, in ra thông báo "SIGINT received" mỗi khi nhận được tín hiệu SIGINT.
-Chương trình sẽ tiếp tục chạy cho đến khi nhận được SIGINT lần thứ 3, sau đó kết thúc.
-Gợi ý: Sử dụng một biến đếm toàn cục để đếm số lần tín hiệu SIGINT được nhận và kiểm tra biến này trong hàm xử lý.
-Câu hỏi: Nếu bỏ qua tín hiệu SIGINT, chuyện gì sẽ xảy ra khi nhấn Ctrl+C?
+Exercise 1: Catch SIGINT Signal
+Requirement: Write a program to catch the SIGINT signal (sent when pressing Ctrl+C) and print a message when this signal is received.
+Use the signal() function to register a handler for the SIGINT signal.
+In the handler function, print the message "SIGINT received" each time the SIGINT signal is received.
+The program will continue to run until it receives the SIGINT signal for the third time, then it will terminate.
+Hint: Use a global counter variable to count the number of times the SIGINT signal is received and check this variable in the handler function.
+Question: What happens if the SIGINT signal is ignored when pressing Ctrl+C?
 
-BT2. Sử dụng Tín hiệu SIGALRM để Tạo Timer
-Yêu cầu: Viết chương trình tạo một bộ đếm thời gian bằng cách sử dụng tín hiệu SIGALRM.
-Sử dụng hàm alarm() để đặt thời gian kích hoạt SIGALRM mỗi giây.
-Khi nhận tín hiệu SIGALRM, chương trình sẽ tăng biến đếm và in ra dòng "Timer: <giây> seconds".
-Dừng chương trình sau khi đếm đến 10 giây.
-Gợi ý: Sử dụng hàm signal() để đăng ký xử lý tín hiệu SIGALRM, và đặt alarm(1) để bộ đếm lặp lại hàng giây.
-Câu hỏi: Điều gì xảy ra nếu không gọi lại alarm(1) trong hàm xử lý?
+Exercise 2: Use SIGALRM Signal to Create Timer
+Requirement: Write a program to create a timer using the SIGALRM signal.
+Use the alarm() function to set the SIGALRM signal to trigger every second.
+When the SIGALRM signal is received, the program will increment a counter and print the line "Timer: <seconds> seconds".
+Stop the program after counting to 10 seconds.
+Hint: Use the signal() function to register a handler for the SIGALRM signal, and set alarm(1) to repeat the timer every second.
+Question: What happens if alarm(1) is not called again in the handler function?
 
-BT3. Tạo Giao tiếp giữa Các Process bằng Tín hiệu
-Yêu cầu: Viết chương trình tạo hai process (cha và con) và sử dụng tín hiệu SIGUSR1 để giao tiếp giữa chúng.
-Cách thực hiện
-Dùng fork() để tạo process con từ process cha.
-Process cha sẽ gửi tín hiệu SIGUSR1 cho process con mỗi 2 giây.
-Khi nhận tín hiệu SIGUSR1, process con sẽ in ra thông báo "Received signal from parent".
-Dừng chương trình sau khi đã gửi tín hiệu 5 lần.
-Gợi ý: Dùng kill() để gửi tín hiệu từ process cha đến process con, và sử dụng signal() trong process con để bắt tín hiệu SIGUSR1.
-Câu hỏi: Tại sao chúng ta cần sử dụng kill() để gửi tín hiệu trong bài này?
+Exercise 3: Create Inter-Process Communication using Signals
+Requirement: Write a program to create two processes (parent and child) and use the SIGUSR1 signal to communicate between them.
+Implementation:
+Use fork() to create a child process from the parent process.
+The parent process will send the SIGUSR1 signal to the child process every 2 seconds.
+When the child process receives the SIGUSR1 signal, it will print the message "Received signal from parent".
+Stop the program after sending the signal 5 times.
+Hint: Use kill() to send the signal from the parent process to the child process, and use signal() in the child process to catch the SIGUSR1 signal.
+Question: Why do we need to use kill() to send the signal in this exercise?
 
-BT4. Viết một chương trình có thể bỏ qua tín hiệu SIGTSTP (thường là Ctrl+Z).
-Sử dụng signal() hoặc sigaction() để bắt và bỏ qua tín hiệu SIGTSTP.
-Khi nhận tín hiệu SIGTSTP, chương trình sẽ không dừng mà tiếp tục chạy và in thông báo "SIGTSTP ignored".
-Gợi ý: Đảm bảo chương trình sẽ tiếp tục chạy thay vì bị dừng khi nhấn Ctrl+Z.
-Câu hỏi: Điều gì xảy ra nếu không xử lý tín hiệu SIGTSTP và người dùng nhấn Ctrl+Z?
+Exercise 4: Write a program that can ignore the SIGTSTP signal (usually Ctrl+Z).
+Use signal() or sigaction() to catch and ignore the SIGTSTP signal.
+When the SIGTSTP signal is received, the program will not stop but continue to run and print the message "SIGTSTP ignored".
+Hint: Ensure the program continues to run instead of being stopped when pressing Ctrl+Z.
+Question: What happens if the SIGTSTP signal is not handled and the user presses Ctrl+Z?
 
-BT5. Chương trình chờ tín hiệu kết hợp chờ người dùng nhập liệu
-Mục tiêu: Viết một chương trình có thể nhận tín hiệu đồng thời cho phép người dùng nhập liệu từ bàn phím.
+Exercise 5: Program to wait for signals while waiting for user input
+Objective: Write a program that can receive signals while allowing the user to input data from the keyboard.
 
-Hướng dẫn:
+Instructions:
 
-Dùng select() hoặc poll() để cho phép chương trình xử lý tín hiệu mà không làm gián đoạn khi nhận
-dữ liệu nhập từ bàn phím.
+Use select() or poll() to allow the program to handle signals without interrupting when receiving keyboard input.
 
-Khi nhận tín hiệu SIGINT, in ra thông báo “SIGINT received.”
+When receiving the SIGINT signal, print the message “SIGINT received.”
 
-Nếu nhận tín hiệu SIGTERM, thoát chương trình.
+If the SIGTERM signal is received, exit the program.
 
-Gợi ý: Kết hợp giữa việc bắt tín hiệu và đọc nhập liệu để chương trình linh hoạt hơn.
-
-
-
+Hint: Combine signal handling and reading input to make the program more flexible.

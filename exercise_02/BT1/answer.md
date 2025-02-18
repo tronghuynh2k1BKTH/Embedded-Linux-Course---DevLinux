@@ -1,9 +1,9 @@
 
-### Chương trình:
+### Program:
 
-1. Mở một file với cờ `O_APPEND`.
-2. Dùng `lseek()` để di chuyển con trỏ về đầu file.
-3. Ghi dữ liệu mới vào file.
+1. Open a file with the `O_APPEND` flag.
+2. Use `lseek()` to move the file pointer to the beginning of the file.
+3. Write new data to the file.
 
 ### Run Command:
 
@@ -29,9 +29,10 @@ This is content for text.txt, BT1
 This is content for text.txt, BT1HELLO
 ```
 
-Mặc dù chương trình đã seek về đầu file, dữ liệu vẫn sẽ được thêm vào cuối file. Lý do là vì cờ `O_APPEND` luôn đảm bảo dữ liệu ghi vào cuối file, bất kể con trỏ file ở đâu.
+Although the program seeks to the beginning of the file, the data will still be appended to the end of the file. The reason is that the `O_APPEND` flag always ensures that data is written to the end of the file, regardless of the file pointer position.
 
-### Tại sao `O_APPEND` lại hoạt động như vậy?
+### Why does `O_APPEND` work this way?
 
-- Khi file được mở với `O_APPEND`, hệ thống sẽ tự động di chuyển con trỏ đến cuối file trước mỗi lần ghi (`write()`).
-- Vì vậy, dù `lseek()` có thay đổi vị trí con trỏ file, `write()` vẫn sẽ ghi vào cuối file.
+- When a file is opened with `O_APPEND`, the system automatically moves the file pointer to the end of the file before each write (`write()`).
+- Therefore, even if `lseek()` changes the file pointer position, `write()` will still write to the end of the file.
+

@@ -1,15 +1,15 @@
 line 23
 if (strcmp(mode, "r") == 0)
 
-vì mode lúc này là địa chỉ chứ không phải là nội dung
-sử dụng strcmp để so sánh nội dung của mode với "r"
+because mode at this point is an address, not the content
+use strcmp to compare the content of mode with "r"
 -----
 
 line 30
 char buffer[num_bytes + 1];
-Nếu bạn đọc 5 ký tự, bạn cần 6 byte (5 + 1) để có thể lưu dữ liệu + \0.
+If you read 5 characters, you need 6 bytes (5 + 1) to store the data + \0.
 ----
 
 line 38
 buffer[bytes_read] = '\0';
-Dòng buffer[bytes_read] = '\0'; được sử dụng để đảm bảo rằng chuỗi dữ liệu đọc được từ file kết thúc bằng ký tự null ('\0').
+The line buffer[bytes_read] = '\0'; is used to ensure that the string data read from the file ends with a null character ('\0').

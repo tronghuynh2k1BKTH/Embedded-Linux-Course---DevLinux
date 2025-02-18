@@ -1,60 +1,45 @@
-BÀI THỰC HÀNH BUỔI 3
+PRACTICAL EXERCISE SESSION 3
 
 ----------------------------------------------------------
-BT1. Khởi tạo và Theo dõi Process
+Exercise 1: Process Creation and Monitoring
 
-Mô tả: Viết một chương trình C tạo một process con bằng cách sử dụng fork().
-Sau khi tạo process, tiến trình con sẽ in ra PID của nó và tiến trình cha in
-ra PID của tiến trình con.
+Description: Write a C program that creates a child process using fork().
+After creating the process, the child process will print its PID and the parent process will print the PID of the child process.
 ----------------------------------------------------------
 
-BT2. Sử dụng exec và Biến Môi Trường
+Exercise 2: Using exec and Environment Variables
 
-Mô tả: Viết một chương trình trong đó tiến trình con sẽ thay thế chương trình
-đang chạy bằng một chương trình khác, ví dụ ls hoặc date, sử dụng hàm execlp()
-hoặc execvp().
+Description: Write a program where the child process will replace the running program with another program, such as ls or date, using the execlp() or execvp() function.
 
-Yêu cầu:
-- Truyền các biến môi trường vào chương trình và thực hiện các công việc khác nhau
-(ví dụ biến môi trường được truyền vào là 1 thì thực hiện lệnh ls, nếu là 2 thì
-thực hiện lệnh date).
-
-- Giải thích điều gì xảy ra với tiến trình ban đầu sau khi exec được gọi.
+Requirements:
+- Pass environment variables to the program and perform different tasks (e.g., if the environment variable passed is 1, execute the ls command; if it is 2, execute the date command).
+- Explain what happens to the original process after exec is called.
 ----------------------------------------------------------
 
-BT3. Tín hiệu Process
+Exercise 3: Process Signals
 
-Mô tả: Viết một chương trình tạo hai process cha - con. Tiến trình cha sẽ gửi
-tín hiệu SIGUSR1 tới tiến trình con sau một khoảng thời gian.
+Description: Write a program that creates a parent and child process. The parent process will send the SIGUSR1 signal to the child process after a certain period of time.
 
-Yêu cầu:
-Sử dụng signal() để định nghĩa hành vi của tiến trình con khi nhận tín hiệu SIGUSR1.
-In ra một thông báo khi tiến trình con nhận được tín hiệu.
+Requirements:
+- Use signal() to define the behavior of the child process when it receives the SIGUSR1 signal.
+- Print a message when the child process receives the signal.
 ----------------------------------------------------------
 
-BT4. Ghi nhận Trạng thái Process
+Exercise 4: Recording Process Status
 
-Mô tả: Viết một chương trình tạo một tiến trình con, sau đó tiến trình
-cha sử dụng wait() để chờ tiến trình con kết thúc và ghi nhận trạng thái
-kết thúc của nó.
+Description: Write a program that creates a child process, then the parent process uses wait() to wait for the child process to finish and record its exit status.
 
-Yêu cầu:
-- Trong tiến trình con, chọn trạng thái kết thúc bằng cách gọi exit() 
-với các giá trị khác nhau.
-- Sử dụng WIFEXITED() và WEXITSTATUS() để xác nhận và ghi nhận mã 
-thoát của tiến trình con.
+Requirements:
+- In the child process, choose the exit status by calling exit() with different values.
+- Use WIFEXITED() and WEXITSTATUS() to confirm and record the exit code of the child process.
 ----------------------------------------------------------
 
-BT5. Tạo Process Zombie và Orphan
+Exercise 5: Creating Zombie and Orphan Processes
 
-Mô tả: Viết một chương trình tạo ra một tiến trình zombie và một tiến
-trình orphan để hiểu về các loại tiến trình đặc biệt này.
+Description: Write a program that creates a zombie process and an orphan process to understand these special types of processes.
 
-Yêu cầu:
-- Để tạo zombie, cho tiến trình cha kết thúc sớm trong khi tiến trình con 
-vẫn còn chạy, và sử dụng ps để quan sát trạng thái zombie của tiến trình.
-- Để tạo orphan, cho tiến trình con ngủ trong một khoảng thời gian dài hơn
-tiến trình cha, để tiến trình con trở thành orphan.
-- Giải thích trạng thái zombie và orphan, cùng lý do tại sao chúng xuất hiện
-trong Linux.
+Requirements:
+- To create a zombie, let the parent process terminate early while the child process is still running, and use ps to observe the zombie state of the process.
+- To create an orphan, let the child process sleep for a longer period than the parent process, so the child process becomes an orphan.
+- Explain the zombie and orphan states, and why they appear in Linux.
 ----------------------------------------------------------

@@ -3,7 +3,6 @@
 #include <signal.h>
 #include <unistd.h>
 
-
 void sig_handler(int signo)
 {
     if (signo == SIGTSTP)
@@ -12,10 +11,11 @@ void sig_handler(int signo)
     }
 }
 
-int main(){
+int main()
+{
     signal(SIGTSTP, sig_handler);
 
-    while(1)
+    while (1)
     {
         printf("running!\n");
         sleep(1);
@@ -23,17 +23,13 @@ int main(){
     return 0;
 }
 
+// Question: What happens if the SIGTSTP signal is not handled and the user presses Ctrl+Z?
 
-// Câu hỏi: Điều gì xảy ra nếu không xử lý tín hiệu SIGTSTP và người dùng nhấn Ctrl+Z?
+// -> The program will be suspended.
+// The SIGTSTP signal is sent to a process when the user presses the Ctrl+Z key combination in the terminal.
+// By default, when this signal is received, the process will be suspended and can be resumed using the
+// fg (foreground) or bg (background) command in the terminal.
 
-// -> chương trình sẽ bị tạm dừng (suspended).
-// Tín hiệu SIGTSTP là tín hiệu được gửi đến một tiến trình khi người dùng nhấn tổ hợp phím Ctrl+Z trong terminal.
-// Mặc định, khi nhận được tín hiệu này, tiến trình sẽ bị tạm dừng và có thể được tiếp tục bằng cách sử dụng lệnh
-// fg (foreground) hoặc bg (background) trong terminal.
+// The program will not be suspended but will instead print a message and continue running.
 
-// Chương trình sẽ không bị tạm dừng mà thay vào đó sẽ in ra thông báo và tiếp tục chạy.
-
-// Nếu bạn không có hàm xử lý tín hiệu SIGTSTP, chương trình sẽ bị tạm dừng khi người dùng nhấn Ctrl+Z.
-
-
-
+// If you do not have a handler for the SIGTSTP signal, the program will be suspended when the user presses Ctrl+Z.

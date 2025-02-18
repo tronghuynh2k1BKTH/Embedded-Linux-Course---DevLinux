@@ -1,7 +1,7 @@
-chia nhỏ bài toán
-- nhập liệu mà không làm gián đoạn chương trình
-    - tại sao không sử dụng getchar() mà dùng select
-    - Cách thao tác với FD
-- Xử lí phần nhập liệu với select
-- Xử lí các signal
-- sau khi ctrl C rồi thì vẫn có thể quay về chương trình đang chạy.
+break down the problem
+- input without interrupting the program
+    - why not use getchar() but use select
+    - How to manipulate FD
+- Handle input with select
+- Handle signals
+- after pressing ctrl C, you can still return to the running program.

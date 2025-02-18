@@ -3,27 +3,30 @@
 #include <unistd.h>
 #include <string.h>
 
-int main() {
-    // Tên file
+int main()
+{
+    // File name
     const char *filename = "test.txt";
 
-    // Mở file với cờ O_APPEND
+    // Open file with O_APPEND flag
     int fd = open(filename, O_WRONLY | O_APPEND);
-    if (fd == -1) {
-        perror("Lỗi mở file");
+    if (fd == -1)
+    {
+        perror("Error opening file");
         return 1;
     }
 
-    // Di chuyển con trỏ về đầu file
-    if (lseek(fd, 0, SEEK_SET) == -1) {
-        perror("Lỗi khi seek");
+    // Move the file pointer to the beginning of the file
+    if (lseek(fd, 0, SEEK_SET) == -1)
+    {
+        perror("Error seeking");
     }
 
-    // Ghi dữ liệu vào file
+    // Write data to the file
     const char *data = "HELLO\n";
     write(fd, data, strlen(data));
 
-    // Đóng file
+    // Close the file
     close(fd);
 
     return 0;

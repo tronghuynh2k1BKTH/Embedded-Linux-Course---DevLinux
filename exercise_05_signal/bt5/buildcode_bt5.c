@@ -5,20 +5,19 @@
 #include <sys/select.h>
 #include <termios.h>
 
-// Hàm xử lý tín hiệu SIGINT
+// Signal handler for SIGINT
 void sigint_handler(int signo) {
     printf("SIGINT received. But no Exit.\n");
 }
 
-
-// Hàm xử lý tín hiệu SIGTERM
+// Signal handler for SIGTERM
 void sigterm_handler(int signo) {
     printf("SIGTERM received. Exiting.\n");
     exit(0);
 }
 
 int main() {
-    // Thiết lập xử lý tín hiệu
+    // Set up signal handling
     signal(SIGINT, sigint_handler);
     signal(SIGTERM, sigterm_handler);
 
@@ -29,7 +28,7 @@ int main() {
         FD_ZERO(&readfds);
         FD_SET(STDIN_FILENO, &readfds);
 
-        // Sử dụng select để chờ tín hiệu hoặc dữ liệu nhập từ bàn phím
+        // Use select to wait for signal or keyboard input
         int ret = select(STDIN_FILENO + 1, &readfds, NULL, NULL, NULL);
 
         if (ret == -1) {
@@ -37,7 +36,7 @@ int main() {
             exit(1);
         } else if (ret > 0) {
             if (FD_ISSET(STDIN_FILENO, &readfds)) {
-                // Đọc dữ liệu từ bàn phím
+                // Read data from keyboard
                 char c[100];
                 scanf("%s", c);
                 printf("You entered: %s\n", c);

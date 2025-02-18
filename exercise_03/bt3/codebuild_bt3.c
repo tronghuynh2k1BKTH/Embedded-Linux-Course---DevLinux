@@ -4,7 +4,7 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-// Hàm xử lý tín hiệu trong tiến trình con
+// Signal handler function in the child process
 void handle_signal(int sig) {
     if (sig == SIGUSR1) {
         printf("Child process received SIGUSR1 signal!\n");
@@ -12,22 +12,22 @@ void handle_signal(int sig) {
 }
 
 int main() {
-    pid_t pid = fork(); // Tạo tiến trình con
+    pid_t pid = fork(); // Create a child process
 
     if (pid < 0) {
         perror("Fork failed");
         exit(1);
     } 
-    else if (pid == 0) { // Code của tiến trình con
-        signal(SIGUSR1, handle_signal); // Định nghĩa hành vi khi nhận SIGUSR1
+    else if (pid == 0) { // Child process code
+        signal(SIGUSR1, handle_signal); // Define behavior when receiving SIGUSR1
         printf("Child process waiting for SIGUSR1...\n");
-        pause(); // Chờ tín hiệu từ tiến trình cha
+        pause(); // Wait for signal from parent process
     } 
-    else { // Code của tiến trình cha
-        sleep(2); // Đợi 2 giây trước khi gửi tín hiệu
+    else { // Parent process code
+        sleep(2); // Wait 2 seconds before sending the signal
         printf("Parent process sending SIGUSR1 to child...\n");
-        kill(pid, SIGUSR1); // Gửi tín hiệu SIGUSR1 đến tiến trình con
-        wait(NULL); // Đợi tiến trình con kết thúc
+        kill(pid, SIGUSR1); // Send SIGUSR1 signal to child process
+        wait(NULL); // Wait for child process to finish
     }
 
     return 0;
@@ -35,6 +35,6 @@ int main() {
 
 // gcc codebuild_bt3.c -o codebuild_bt3
 // ./codebuild_bt3
-// Kết quả:
+// Output:
 // Parent process sending SIGUSR1 to child...
 // Child process received SIGUSR1 signal!

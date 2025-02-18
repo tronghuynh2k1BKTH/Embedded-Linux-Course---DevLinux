@@ -1,8 +1,8 @@
-BT1. Viết một chương trình mở một file bất kì và sử dụng cờ O_APPEND,
-    sau đó thực hiện seek về đầu file rồi ghi một vài dữ  liệu vào file đó.
-    Dữ liệu sẽ xuất hiện ở vị trí nào của file và tại sao lại như vậy?
+BT1. Write a program that opens any file and uses the O_APPEND flag,
+	then seeks to the beginning of the file and writes some data to it.
+	Where will the data appear in the file and why?
 
-BT2. Sau mỗi lệnh write dưới đây, Cho biết nội dung sẽ được ghi vào file nào, nội dung là gì và giải thích tại sao?
+BT2. After each write command below, specify which file the content will be written to, what the content is, and explain why:
 fd1 = open(file, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 fd3 = open(file, O_RDWR);
 write(fd1, "Hello,", 6);
@@ -11,20 +11,20 @@ lseek(fd2, 0, SEEK_SET);
 write(fd1, "HELLO,", 6);
 write(fd3, "Gidday", 6);
 
-BT3. Viết một chương trình có só lượng command-line arguments là 3, có dạng như sau:
+BT3. Write a program with 3 command-line arguments in the following format:
 $ ./example_program filename num-bytes [r/w] "Hello"
-Trong đó:
-	1. example_grogram: Tên file thực thi
-	2. filename: Tên file
-	3. num-bytes: Số byte muốn read/write
-	4. [r/w]: r -> Thực hiện đọc từ  filename và in ra màn hình
-		    w -> Thực hiện ghi vào filename
-	5. "Hello": Nội dung bất kì muốn read/write vào filename
+Where:
+	1. example_program: The name of the executable file
+	2. filename: The name of the file
+	3. num-bytes: The number of bytes to read/write
+	4. [r/w]: r -> Read from the filename and print to the screen
+			  w -> Write to the filename
+	5. "Hello": Any content to read/write to the filename
 
-BT4. Tạo file bất kì và ghi một đoạn dữ liệu vào file đó. Thực hiện ghi ra màn hình
-    các thông tin: Loại file, tên file, thời gian chỉnh sửa file lần cuối, kích thước.
-    - Sử dụng struct stat
+BT4. Create any file and write some data to it. Print the following information to the screen:
+	File type, file name, last modification time, size.
+	- Use struct stat
 
-
+---
 ---
 Lession 2: https://duancuahuynh.notion.site/lession-2-190352915108808286d7e678581072ec

@@ -4,21 +4,21 @@
 #include <sys/wait.h>
 
 int main() {
-    pid_t pid = fork();  // Tạo tiến trình con
+    pid_t pid = fork();  // Create a child process
 
-    if (pid == 0) {  // Tiến trình con
+    if (pid == 0) {  // Child process
         printf("Child process running...\n");
-        sleep(2);  // Giả lập tiến trình con chạy
-        int exit_code = 42;  // Đặt mã thoát tùy chọn
+        sleep(2);  // Simulate child process running
+        int exit_code = 42;  // Set custom exit code
         printf("Child process exiting with code %d\n", exit_code);
-        exit(exit_code);  // Thoát với mã 42
+        exit(exit_code);  // Exit with code 42
     } 
-    else if (pid > 0) {  // Tiến trình cha
+    else if (pid > 0) {  // Parent process
         int status;
         printf("Parent waiting for child to exit...\n");
-        wait(&status);  // Chờ tiến trình con kết thúc
+        wait(&status);  // Wait for child process to finish
 
-        // Kiểm tra nếu tiến trình con kết thúc bình thường
+        // Check if the child process exited normally
         if (WIFEXITED(status)) {
             printf("Child exited normally with status %d\n", WEXITSTATUS(status));
         } else {
@@ -28,7 +28,7 @@ int main() {
         printf("Parent process exiting.\n");
         exit(2);
     } 
-    else {  // fork() thất bại
+    else {  // fork() failed
         perror("fork failed");
         return 1;
     }
@@ -36,11 +36,10 @@ int main() {
     return 0;
 }
 
-
-// Mục đích của việc sử dụng exit() với mã thoát
-// Khi một tiến trình kết thúc, nó có thể trả về mã thoát (exit status) để thông báo
-// cho tiến trình cha hoặc hệ điều hành biết kết quả của quá trình thực thi. Việc này rất quan trọng vì:
-// - Giúp tiến trình cha biết kết quả thực thi của tiến trình con.
-// - Cho phép tiến trình cha xử lý các tình huống đặc biệt dựa trên mã thoát của tiến trình con.
-// - Cho phép hệ điều hành biết kết quả của tiến trình con và thực hiện các hành động cần thiết
-//     (ví dụ: giải phóng tài nguyên, ghi log, v.v.).
+// Purpose of using exit() with exit code
+// When a process terminates, it can return an exit code (exit status) to inform
+// the parent process or the operating system about the result of its execution. This is important because:
+// - It helps the parent process know the execution result of the child process.
+// - It allows the parent process to handle special situations based on the child's exit code.
+// - It allows the operating system to know the result of the child process and take necessary actions
+//   (e.g., freeing resources, logging, etc.).
