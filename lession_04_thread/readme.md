@@ -1,4 +1,4 @@
-## BÀI THỰC HÀNH BUỔI 4
+## Exercise Session 4
 
 ### Exercise 1: Basic Thread Creation and Execution
 Write a program using the pthread.h library to perform the following tasks:
