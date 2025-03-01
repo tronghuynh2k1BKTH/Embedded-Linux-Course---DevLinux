@@ -47,6 +47,35 @@ Write a program with two threads: producer and consumer as follows:
 - Repeat the above process 10 times and print all values read by the consumer.
 - Hint: Use pthread_cond_wait to make the consumer wait until there is a signal from the producer that the data is ready.
 
+### Expected Output
+
+Producer created data: 6, times: 1  
+Consumer received data: 6, times: 1  
+Producer created data: 9, times: 2  
+Consumer received data: 9, times: 2  
+Producer created data: 2, times: 3  
+Consumer received data: 2, times: 3  
+Producer created data: 2, times: 4  
+Consumer received data: 2, times: 4  
+Producer created data: 7, times: 5  
+Consumer received data: 7, times: 5  
+Producer created data: 6, times: 6  
+Consumer received data: 6, times: 6  
+Producer created data: 2, times: 7  
+Consumer received data: 2, times: 7  
+Producer created data: 5, times: 8  
+Consumer received data: 5, times: 8  
+Producer created data: 4, times: 9  
+Consumer received data: 4, times: 9  
+Producer created data: 1, times: 10  
+Consumer received data: 1, times: 10  
+Done
+
+### Key Functions
+- `pthread_mutex_init()`, `pthread_mutex_lock()`, `pthread_mutex_unlock()`, `pthread_mutex_destroy()`: Manage mutex for thread synchronization.
+- `pthread_cond_init()`, `pthread_cond_wait()`, `pthread_cond_signal()`, `pthread_cond_destroy()`: Manage condition variables for signaling between threads.
+- Use a flag to avoid the consumer waiting forever.
+
 ### Exercise 4: Counting Even and Odd Numbers with Threads
 Write a program to perform the following steps:
 - Create a random array containing 100 integers from 1 to 100.
@@ -54,6 +83,26 @@ Write a program to perform the following steps:
 - When both threads complete counting, print the total number of even and odd numbers.
 - Use pthread_join to ensure that the program only ends when both threads have completed their tasks.
 - Hint: Each thread will handle a different part of the work, so mutex is not needed in this exercise.
+
+### Expected Output
+
+Array:
+62 42 90 43 72 34 63 69 21 4  
+86 60 14 4 55 70 95 57 37 97  
+2 55 4 45 92 31 59 71 33 66  
+18 94 7 7 89 31 40 3 99 12  
+6 36 71 19 39 77 40 86 34 28  
+82 87 35 37 31 26 19 90 49 51  
+7 66 97 65 24 37 95 15 39 93  
+78 97 80 49 67 19 77 7 4 10  
+86 37 48 20 74 79 98 44 20 46  
+47 26 63 95 90 38 31 85 52 21  
+
+Sum of even numbers: 2198  
+Sum of odd numbers: 2804  
+
+### Key Function
+- Use `srand(time(NULL))` to initialize randomness and `rand()` to generate random numbers.
 
 ### Exercise 5: Sharing Resources with Read-Write Lock
 Write a program to simulate a situation where multiple threads read and write data:
@@ -65,6 +114,23 @@ Write a program to simulate a situation where multiple threads read and write da
 - Print the value of data after all threads have completed.
 - Hint: Use pthread_rwlock_rdlock and pthread_rwlock_wrlock for read-write synchronization.
 
+### Expected Output
+
+Reader 280437626827168: 0  
+Reader 280437616341408: 0  
+Reader 280437595369888: 0  
+Reader 280437605855648: 0  
+Writer 280437563912608: 1  
+Reader 280437584884128: 1  
+Writer 280437574398368: 2  
+Done program
+
+### Key Functions
+- `pthread_rwlock_rdlock()`: Locks data for reading.
+- `pthread_rwlock_wrlock()`: Locks data for writing.
+- Use a loop to create threads (e.g., `for()` loop).
+
+
 ### Exercise 6: Summing an Array with Threads and Mutex
 Write a program to sum a large array of 1 million integers.
 - Divide the array into 4 equal parts.
@@ -73,41 +139,11 @@ Write a program to sum a large array of 1 million integers.
 - Print the total sum of the array after all threads have completed.
 - Hint: Use pthread_mutex_lock to protect the total variable when threads add their results.
 
-
-BT3. Sử Dụng Condition Variables
-Viết một chương trình có hai threads: producer và consumer như sau:
-
-Producer: Tạo ra một số ngẫu nhiên từ 1 đến 10 và lưu vào một biến toàn cục data.
-Consumer: Đợi producer cung cấp dữ liệu, sau đó đọc và in ra dữ liệu đó.
-
-Sử dụng pthread_cond_wait và pthread_cond_signal để đồng bộ hóa giữa producer và consumer, đảm bảo rằng consumer chỉ đọc dữ liệu khi producer đã cung cấp xong.
-
-Lặp lại quá trình trên 10 lần và in ra tất cả các giá trị do consumer đọc được.
-Gợi ý: Sử dụng pthread_cond_wait để cho consumer đợi cho đến khi có tín hiệu từ producer rằng dữ liệu đã sẵn sàng.
-
-BT4. Đếm Số Chẵn và Số Lẻ với Threads
-Viết một chương trình để thực hiện các bước sau:
-Tạo một mảng ngẫu nhiên chứa 100 số nguyên từ 1 đến 100.
-Tạo hai threads: một thread đếm số chẵn và một thread đếm số lẻ trong mảng.
-Khi hai threads hoàn tất việc đếm, in ra tổng số số chẵn và tổng số số lẻ.
-Sử dụng pthread_join để đảm bảo rằng chương trình chỉ kết thúc khi cả hai threads hoàn thành nhiệm vụ.
-Gợi ý: Mỗi thread sẽ xử lý một phần công việc khác nhau, vì vậy không cần mutex trong bài này.
-
-BT5. Chia Sẻ Tài Nguyên Với Read-Write Lock
-Viết một chương trình mô phỏng tình huống có nhiều thread đọc và ghi dữ liệu:
-Tạo một biến data chứa một số nguyên.
-Tạo 5 threads đọc và 2 threads ghi:
-Các thread đọc sẽ chỉ đọc data mà không thay đổi.
-Các thread ghi sẽ tăng giá trị của data lên 1.
-Sử dụng read-write lock để đảm bảo nhiều threads có thể đọc cùng lúc, nhưng chỉ một thread được ghi tại bất kỳ thời điểm nào.
-In ra giá trị của data sau khi tất cả các threads hoàn thành.
-Gợi ý: Sử dụng pthread_rwlock_rdlock và pthread_rwlock_wrlock cho đọc-ghi đồng bộ.
-
-BT6. Tính Tổng Mảng với Threads và Mutex
-Viết một chương trình tính tổng một mảng lớn gồm 1 triệu số nguyên.
-Chia mảng thành 4 phần bằng nhau.
-Tạo 4 threads, mỗi thread tính tổng một phần của mảng.
-Sử dụng một biến tổng toàn cục và mutex để tổng hợp kết quả từ tất cả các threads.
-In ra kết quả tổng của mảng sau khi các threads hoàn thành.
-Gợi ý: Sử dụng pthread_mutex_lock để bảo vệ biến tổng khi các threads cộng kết quả của chúng.
+### Key Functions
+- `pthread_create()`: Creates threads to handle parts of the array.
+- `srand(time(NULL))` and `rand()`: Generate a random array.
+- `pthread_mutex_lock()` / `pthread_mutex_unlock()`: Lock and unlock the mutex for updating the global total.
+- Divide the array into 4 parts, each handled by a separate thread.
+- Ensure the array size is up to 1,000,000 elements.
+- Create 20 test cases to validate the implementation.
 
