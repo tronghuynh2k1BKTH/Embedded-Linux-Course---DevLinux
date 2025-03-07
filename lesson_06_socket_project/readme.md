@@ -44,3 +44,11 @@ why has a different for 1 thread has 2 port
     -----> no no no
 
 open many socket to listen on 1 process?
+
+code hiện tại không đảm bảo peer to peer
+    Cách sửa để chuyển thành Peer-to-Peer (P2P)
+	•	Cả hai process vừa làm server, vừa làm client.
+	•	Mỗi process cần:
+	1.	Tạo socket, bind(), listen() (để chờ kết nối từ peer).
+	2.	Có thể gọi connect() đến peer khác (chứ không chỉ chờ nhận kết nối).
+	3.	Gửi và nhận dữ liệu giữa các peers, không có một “Server chính”.

@@ -21,20 +21,23 @@ int server_socket;
 void start_server(int port) {
     struct sockaddr_in server_addr;
 
+    // Create a socket
     if ((server_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         perror("Socket creation failed");
         exit(1);
     }
 
-    server_addr.sin_family = AF_INET;
+    // Set server address parameters and bind the socket
+    server_addr.sin_family = AF_INET; // IPv4
     server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(port);
+    server_addr.sin_port = htons(port); // Convert to network byte order
 
     if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
         perror("Bind failed");
         exit(1);
     }
 
+    // Listen for incoming connections
     if (listen(server_socket, MAX_CLIENTS) == -1) {
         perror("Listen failed");
         exit(1);
