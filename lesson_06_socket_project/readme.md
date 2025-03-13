@@ -38,11 +38,6 @@ Không cần khai báo trước 3 socket cố định!
     - Chỉ cần **1 socket “listen”** để chờ kết nối.
     - Khi có client kết nối đến, **tạo thêm socket mới động (dynamically)** để xử lý từng kết nối.
 
-why has a different for 1 thread has 2 port
-    - side on main thread: myport is 4000
-    - side on connection: list is another port is 51464
-    -----> no no no
-
 open many socket to listen on 1 process?
 
 code hiện tại không đảm bảo peer to peer
