@@ -32,6 +32,11 @@ check & stop process with PID
     ps -aux | grep 46051
     kill -9 46051
 
+else if (strncmp(command, "myip", 4) == 0) {system("hostname -I");} 
+else if (strncmp(command, "myport", 6) == 0) {printf("Port: %d\n", listening_port);} 
+
+watch -n 1 "ps aux | grep chat | grep -v grep"
+
 ----------------- QnA
 
 Không cần khai báo trước 3 socket cố định!
