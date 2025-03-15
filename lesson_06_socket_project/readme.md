@@ -107,6 +107,12 @@ exit
   Message from <IP>:<Port> -> <Message>
   ```
 
+## Video Demonstration
+You can watch a video demonstration of the application [here](https://drive.google.com/file/d/1PqA9mrhyHLOFhGmRJnm2NoY6oLMTegQv/view?usp=sharing).
+
+## Issues Being Addressed
+- Establishing simultaneous two-way connections.
+
 ## Code Flow
 1. Create socket (process).
 2. Bind and listen.
@@ -139,3 +145,4 @@ else if (strncmp(command, "myport", 6) == 0) {
 ```bash
 watch -n 1 "ps aux | grep chat | grep -v grep"
 ```
+
