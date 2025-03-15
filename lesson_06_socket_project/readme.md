@@ -19,7 +19,7 @@ This is a **peer-to-peer (P2P) chat application** that allows multiple clients t
 
 ### **2. Compile the Program**
 ```bash
-gcc chat.c -o chat -pthread
+gcc chat.c -o chat
 ```
 
 ## Usage
@@ -27,10 +27,6 @@ gcc chat.c -o chat -pthread
 Run the application with a port number:
 ```bash
 ./chat <port>
-```
-Example:
-```bash
-./chat 5000
 ```
 This starts the chat program and listens for incoming connections on port **5000**.
 
@@ -110,25 +106,6 @@ exit
   ```
   Message from <IP>:<Port> -> <Message>
   ```
-
-## Troubleshooting
-### **1. Connection Fails**
-- Ensure the target peer is running and listening on the correct port.
-- Check your firewall settings (`sudo ufw allow <port>`).
-- Verify IP addresses using `myip`.
-
-### **2. Message Not Received**
-- Ensure both peers are connected (`list` command).
-- Check if the message format is correct (`send <id> <message>`).
-- Restart the application and try again.
-
-## Future Improvements
-- **Usernames for Peers** instead of using IP addresses.
-- **Encryption** for secure message exchange.
-- **File Transfer Feature** between peers.
-
-## License
-This project is open-source and licensed under the MIT License.
 
 ## Code Flow
 1. Create socket (process).
