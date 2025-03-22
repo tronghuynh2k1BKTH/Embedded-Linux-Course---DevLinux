@@ -55,8 +55,7 @@ void connect_to_peer(char *ip, int port)
         return;
     }
 
-    // Create client socket and connect to server
-    int client_socket = socket(AF_INET, SOCK_STREAM, 0); // TCP (SOCK_STREAM), IPv4 (AF_INET)
+    int client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client_socket < 0)
     {
         perror("Socket creation failed");
@@ -71,6 +70,17 @@ void connect_to_peer(char *ip, int port)
     if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
     {
         perror("Connection failed");
+        printf("Failed to connect to %s:%d\n", ip, port);
+        close(client_socket);
+        return;
+    }
+
+    // Gửi port lắng nghe của mình đến peer
+    char port_msg[32];
+    snprintf(port_msg, sizeof(port_msg), "PORT:%d", listening_port);
+    if (send(client_socket, port_msg, strlen(port_msg), 0) < 0)
+    {
+        perror("Failed to send listening port");
         close(client_socket);
         return;
     }
@@ -128,27 +138,19 @@ void send_message(int id, char *message)
 
 void *receive_messages(void *arg)
 {
-    // Create file descriptor set
     fd_set read_fds;
     struct sockaddr_in client_addr;
     socklen_t addr_len;
-    // max_sd is used in select() to determine the highest file descriptor
     int max_sd, activity, new_socket;
-    // Buffer to store incoming messages
     char buffer[BUFFER_SIZE];
 
     while (1)
     {
-        // Clear file descriptor set
         FD_ZERO(&read_fds);
         FD_SET(server_socket, &read_fds);
         max_sd = server_socket;
 
         pthread_mutex_lock(&lock);
-        // Add client sockets to file descriptor set
-        // Use FD_SET() to add all connection sockets to the read_fds set
-        // so select() can monitor them.
-        // Update max_sd (the highest socket descriptor) to use with select().
         for (int i = 0; i < connection_count; i++)
         {
             FD_SET(connections[i].socket, &read_fds);
@@ -157,10 +159,6 @@ void *receive_messages(void *arg)
         }
         pthread_mutex_unlock(&lock);
 
-        // Wait for activity on any of the sockets using select()
-        // select() will block until there is activity on any of the sockets
-        // or until the timeout expires.
-        // The return value of select() is the number of sockets with activity.
         activity = select(max_sd + 1, &read_fds, NULL, NULL, NULL);
 
         if (FD_ISSET(server_socket, &read_fds))
@@ -173,8 +171,43 @@ void *receive_messages(void *arg)
                 connections[connection_count].socket = new_socket;
                 connections[connection_count].address = client_addr;
                 connection_count++;
+                int new_connection_index = connection_count - 1; // Lưu chỉ số của kết nối mới
                 pthread_mutex_unlock(&lock);
                 printf("New connection from %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+
+                // Nhận tin nhắn chứa port lắng nghe
+                char port_msg[32];
+                int bytes_received = recv(new_socket, port_msg, sizeof(port_msg) - 1, 0);
+                if (bytes_received > 0)
+                {
+                    port_msg[bytes_received] = '\0';
+                    if (strncmp(port_msg, "PORT:", 5) == 0)
+                    {
+                        int peer_listening_port = atoi(port_msg + 5); // Lấy port từ tin nhắn
+                        char peer_ip[16];
+                        strcpy(peer_ip, inet_ntoa(client_addr.sin_addr));
+
+                        // Kiểm tra trùng lặp
+                        int is_duplicate = 0;
+                        pthread_mutex_lock(&lock);
+                        for (int i = 0; i < connection_count - 1; i++)
+                        {
+                            if (strcmp(inet_ntoa(connections[i].address.sin_addr), peer_ip) == 0 &&
+                                ntohs(connections[i].address.sin_port) == peer_listening_port)
+                            {
+                                is_duplicate = 1;
+                                break;
+                            }
+                        }
+                        pthread_mutex_unlock(&lock);
+
+                        // Connect back nếu không trùng lặp và không phải tự kết nối
+                        if (peer_listening_port != listening_port && !is_duplicate)
+                        {
+                            connect_to_peer(peer_ip, peer_listening_port);
+                        }
+                    }
+                }
             }
         }
 
@@ -188,7 +221,11 @@ void *receive_messages(void *arg)
                 if (bytes_received > 0)
                 {
                     buffer[bytes_received] = '\0';
-                    printf("\nMessage from %s:%d -> %s\n", inet_ntoa(connections[i].address.sin_addr), ntohs(connections[i].address.sin_port), buffer);
+                    // Kiểm tra xem tin nhắn có phải là PORT không, nếu không thì hiển thị
+                    if (strncmp(buffer, "PORT:", 5) != 0)
+                    {
+                        printf("\nMessage from %s:%d -> %s\n", inet_ntoa(connections[i].address.sin_addr), ntohs(connections[i].address.sin_port), buffer);
+                    }
                 }
             }
         }
