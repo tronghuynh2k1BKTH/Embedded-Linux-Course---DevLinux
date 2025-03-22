@@ -141,44 +141,168 @@ void connect_to_peer(char *ip, int port)
 
 void terminate_connection(int id)
 {
-    if (id < 1 || id > connection_count)
+    pthread_mutex_lock(&lock);
+    int display_id = 0;
+    char *target_ip = NULL;
+    int target_port = 0;
+    int outgoing_socket = -1;
+
+    // Tìm IP và port tương ứng với ID trong danh sách hiển thị
+    for (int i = 0; i < connection_count; i++)
+    {
+        char *ip = inet_ntoa(connections[i].address.sin_addr);
+        int port = ntohs(connections[i].address.sin_port);
+        int already_displayed = 0;
+
+        for (int j = 0; j < i; j++)
+        {
+            if (strcmp(inet_ntoa(connections[j].address.sin_addr), ip) == 0 &&
+                ntohs(connections[j].address.sin_port) == port)
+            {
+                already_displayed = 1;
+                break;
+            }
+        }
+
+        if (!already_displayed)
+        {
+            display_id++;
+            if (display_id == id)
+            {
+                target_ip = ip;
+                target_port = port;
+                break;
+            }
+        }
+    }
+
+    if (target_ip == NULL)
     {
         printf("Invalid connection ID\n");
+        pthread_mutex_unlock(&lock);
         return;
     }
 
-    int index = id - 1;
-    close(connections[index].socket);
-    printf("Connection %d terminated.\n", id);
-
-    pthread_mutex_lock(&lock);
-    for (int i = index; i < connection_count - 1; i++)
+    // Tìm socket đi (is_outgoing = 1) để gửi tin nhắn TERMINATE
+    for (int i = 0; i < connection_count; i++)
     {
-        connections[i] = connections[i + 1];
+        if (strcmp(inet_ntoa(connections[i].address.sin_addr), target_ip) == 0 &&
+            ntohs(connections[i].address.sin_port) == target_port &&
+            connections[i].is_outgoing == 1)
+        {
+            outgoing_socket = connections[i].socket;
+            break;
+        }
     }
-    connection_count--;
+
+    // Gửi tin nhắn TERMINATE qua socket đi (nếu có)
+    if (outgoing_socket != -1)
+    {
+        const char *terminate_msg = "TERMINATE";
+        if (send(outgoing_socket, terminate_msg, strlen(terminate_msg), 0) < 0)
+        {
+            perror("Failed to send TERMINATE message");
+        }
+        else
+        {
+            printf("Sent TERMINATE message to %s:%d\n", target_ip, target_port);
+        }
+    }
+
+    // Đóng tất cả socket liên quan đến peer này
+    for (int i = 0; i < connection_count; i++)
+    {
+        if (strcmp(inet_ntoa(connections[i].address.sin_addr), target_ip) == 0 &&
+            ntohs(connections[i].address.sin_port) == target_port)
+        {
+            close(connections[i].socket);
+            for (int j = i; j < connection_count - 1; j++)
+            {
+                connections[j] = connections[j + 1];
+            }
+            connection_count--;
+            i--;
+        }
+    }
+
+    printf("Connection %d terminated.\n", id);
     pthread_mutex_unlock(&lock);
 }
 
 void send_message(int id, char *message)
 {
-    if (id < 1 || id > connection_count)
+    pthread_mutex_lock(&lock);
+    int display_id = 0;
+    char *target_ip = NULL;
+    int target_port = 0;
+    int target_socket = -1;
+
+    // Tìm IP và port tương ứng với ID trong danh sách hiển thị
+    for (int i = 0; i < connection_count; i++)
+    {
+        char *ip = inet_ntoa(connections[i].address.sin_addr);
+        int port = ntohs(connections[i].address.sin_port);
+        int already_displayed = 0;
+
+        for (int j = 0; j < i; j++)
+        {
+            if (strcmp(inet_ntoa(connections[j].address.sin_addr), ip) == 0 &&
+                ntohs(connections[j].address.sin_port) == port)
+            {
+                already_displayed = 1;
+                break;
+            }
+        }
+
+        if (!already_displayed)
+        {
+            display_id++;
+            if (display_id == id)
+            {
+                target_ip = ip;
+                target_port = port;
+                break;
+            }
+        }
+    }
+
+    if (target_ip == NULL)
     {
         printf("Invalid connection ID\n");
+        pthread_mutex_unlock(&lock);
         return;
     }
 
-    int socket = connections[id - 1].socket;
-    if (send(socket, message, strlen(message), 0) < 0)
+    // Tìm socket đi (is_outgoing = 1) để gửi tin nhắn
+    for (int i = 0; i < connection_count; i++)
+    {
+        if (strcmp(inet_ntoa(connections[i].address.sin_addr), target_ip) == 0 &&
+            ntohs(connections[i].address.sin_port) == target_port &&
+            connections[i].is_outgoing == 1)
+        {
+            target_socket = connections[i].socket;
+            break;
+        }
+    }
+
+    if (target_socket == -1)
+    {
+        printf("No outgoing connection found for %s:%d\n", target_ip, target_port);
+        pthread_mutex_unlock(&lock);
+        return;
+    }
+
+    // Gửi tin nhắn qua socket đi
+    if (send(target_socket, message, strlen(message), 0) < 0)
     {
         perror("Message send failed");
     }
     else
     {
-        printf("Message sent to %s:%d\n",
-               inet_ntoa(connections[id - 1].address.sin_addr),
-               ntohs(connections[id - 1].address.sin_port));
+        printf("Message sent to %s:%d\n", target_ip, target_port);
     }
+
+    pthread_mutex_unlock(&lock);
 }
 
 void *receive_messages(void *arg)
@@ -224,27 +348,28 @@ void *receive_messages(void *arg)
                 connection_count++;
                 int new_connection_index = connection_count - 1; // Lưu chỉ số của kết nối mới
                 pthread_mutex_unlock(&lock);
-        
+
                 // Nhận tin nhắn chứa port lắng nghe
                 char port_msg[32];
                 int bytes_received = recv(new_socket, port_msg, sizeof(port_msg) - 1, 0);
                 if (bytes_received > 0)
                 {
                     port_msg[bytes_received] = '\0';
+                    printf("Debug: Received PORT message: %s\n", port_msg);
                     if (strncmp(port_msg, "PORT:", 5) == 0)
                     {
                         int peer_listening_port = atoi(port_msg + 5); // Lấy port từ tin nhắn
                         char peer_ip[16];
                         strcpy(peer_ip, inet_ntoa(client_addr.sin_addr));
-        
+
                         // In thông báo với port lắng nghe
                         printf("New connection from %s:%d\n", peer_ip, peer_listening_port);
-        
+
                         // Cập nhật port trong connections để sử dụng port lắng nghe
                         pthread_mutex_lock(&lock);
                         connections[new_connection_index].address.sin_port = htons(peer_listening_port);
                         pthread_mutex_unlock(&lock);
-        
+
                         // Kiểm tra trùng lặp
                         int is_duplicate = 0;
                         pthread_mutex_lock(&lock);
@@ -258,10 +383,11 @@ void *receive_messages(void *arg)
                             }
                         }
                         pthread_mutex_unlock(&lock);
-        
+
                         // Connect back nếu không trùng lặp và không phải tự kết nối
                         if (peer_listening_port != listening_port && !is_duplicate)
                         {
+                            printf("Attempting to connect back to %s:%d\n", peer_ip, peer_listening_port);
                             connect_to_peer(peer_ip, peer_listening_port);
                         }
                     }
@@ -287,21 +413,57 @@ void *receive_messages(void *arg)
                 if (bytes_received > 0)
                 {
                     buffer[bytes_received] = '\0';
-                    // Kiểm tra xem tin nhắn có phải là PORT không, nếu không thì hiển thị
-                    if (strncmp(buffer, "PORT:", 5) != 0)
+                    // Kiểm tra tin nhắn TERMINATE
+                    if (strcmp(buffer, "TERMINATE") == 0)
                     {
+                        char *peer_ip = inet_ntoa(connections[i].address.sin_addr);
+                        int peer_port = ntohs(connections[i].address.sin_port);
+                        printf("Received TERMINATE from %s:%d, closing connection...\n", peer_ip, peer_port);
+
+                        // Đóng tất cả socket liên quan đến peer này
+                        for (int j = 0; j < connection_count; j++)
+                        {
+                            if (strcmp(inet_ntoa(connections[j].address.sin_addr), peer_ip) == 0 &&
+                                ntohs(connections[j].address.sin_port) == peer_port)
+                            {
+                                close(connections[j].socket);
+                                for (int k = j; k < connection_count - 1; k++)
+                                {
+                                    connections[k] = connections[k + 1];
+                                }
+                                connection_count--;
+                                j--;
+                            }
+                        }
+                    }
+                    // Kiểm tra xem tin nhắn có phải là PORT không, nếu không thì hiển thị
+                    else if (strncmp(buffer, "PORT:", 5) != 0)
+                    {
+                        printf("Debug: Received %d bytes on socket %d (is_outgoing: %d)\n", bytes_received, connections[i].socket, connections[i].is_outgoing);
                         printf("\nMessage from %s:%d -> %s\n", inet_ntoa(connections[i].address.sin_addr), ntohs(connections[i].address.sin_port), buffer);
                     }
                 }
                 else if (bytes_received == 0)
                 {
-                    printf("Connection closed by %s:%d\n", inet_ntoa(connections[i].address.sin_addr), ntohs(connections[i].address.sin_port));
-                    close(connections[i].socket);
-                    for (int j = i; j < connection_count - 1; j++)
+                    char *peer_ip = inet_ntoa(connections[i].address.sin_addr);
+                    int peer_port = ntohs(connections[i].address.sin_port);
+                    printf("Connection closed by %s:%d\n", peer_ip, peer_port);
+
+                    // Đóng tất cả socket liên quan đến peer này
+                    for (int j = 0; j < connection_count; j++)
                     {
-                        connections[j] = connections[j + 1];
+                        if (strcmp(inet_ntoa(connections[j].address.sin_addr), peer_ip) == 0 &&
+                            ntohs(connections[j].address.sin_port) == peer_port)
+                        {
+                            close(connections[j].socket);
+                            for (int k = j; k < connection_count - 1; k++)
+                            {
+                                connections[k] = connections[k + 1];
+                            }
+                            connection_count--;
+                            j--;
+                        }
                     }
-                    connection_count--;
                     i--;
                 }
                 else
