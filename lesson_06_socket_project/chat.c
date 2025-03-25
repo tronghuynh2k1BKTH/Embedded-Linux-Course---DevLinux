@@ -10,19 +10,18 @@
 #define MAX_CLIENTS 10
 #define BUFFER_SIZE 1024
 
-// Connection struct to store client socket and address
 typedef struct
 {
-    int socket; // storage socket descriptor
+    int socket;
     struct sockaddr_in address;
-    int is_outgoing; // 1 nếu là socket đi (outgoing), 0 nếu là socket đến (incoming)
+    int is_outgoing;
 } Connection;
 
-// create an array of connections and a counter
 Connection connections[MAX_CLIENTS];
 int connection_count = 0;
 int server_socket, listening_port;
 pthread_mutex_t lock;
+volatile int running = 1; // Biến cờ để dừng thread
 
 void print_help()
 {
@@ -44,17 +43,12 @@ void list_connections()
     int display_count = 0;
     int displayed[MAX_CLIENTS] = {0};
 
-    // In thông tin kết nối của mỗi peer
     for (int i = 0; i < connection_count; i++)
     {
         char *ip = inet_ntoa(connections[i].address.sin_addr);
         int port = ntohs(connections[i].address.sin_port);
         int already_displayed = 0;
 
-        // Kiểm tra xem IP và port đã được hiển thị chưa
-        // connections[0]: socket = 4, address = 192.168.90.135:5000, is_outgoing = 1.
-        // connections[1]: socket = 5, address = 192.168.90.135:5000, is_outgoing = 0.
-        // -> chỉ hiển thị 1 lần
         for (int j = 0; j < i; j++)
         {
             if (strcmp(inet_ntoa(connections[j].address.sin_addr), ip) == 0 &&
@@ -65,7 +59,6 @@ void list_connections()
             }
         }
 
-        // Nếu chưa hiển thị, in thông tin kết nối
         if (!already_displayed)
         {
             printf("%d: %s %d\n", display_count + 1, ip, port);
@@ -95,9 +88,8 @@ void connect_to_peer(char *ip, int port)
     server_addr.sin_port = htons(port);
     inet_pton(AF_INET, ip, &server_addr.sin_addr);
 
-    // Thử kết nối với tối đa 5 lần, mỗi lần cách nhau 1 giây
     int max_retries = 5;
-    int retry_delay = 1; // giây
+    int retry_delay = 1;
     int connected = 0;
 
     for (int i = 0; i < max_retries; i++)
@@ -109,7 +101,7 @@ void connect_to_peer(char *ip, int port)
         }
         else
         {
-            if (i < max_retries - 1) // Nếu không phải lần thử cuối, in thông báo và chờ
+            if (i < max_retries - 1)
             {
                 printf("Retry %d/%d: Failed to connect to %s:%d, retrying in %d second(s)...\n", i + 1, max_retries, ip, port, retry_delay);
                 sleep(retry_delay);
@@ -125,9 +117,6 @@ void connect_to_peer(char *ip, int port)
         return;
     }
 
-    // Gửi PORT dể cập nhật port trong list và thông báo với peer kết nối
-    // sẽ gửi đến 2 nơi nhận, 1 nơi là check connection và cập nhật port
-    //  1 nơi là thông báo đã kết nối thành công.
     char port_msg[32];
     snprintf(port_msg, sizeof(port_msg), "PORT:%d", listening_port);
     if (send(client_socket, port_msg, strlen(port_msg), 0) < 0)
@@ -140,7 +129,7 @@ void connect_to_peer(char *ip, int port)
     pthread_mutex_lock(&lock);
     connections[connection_count].socket = client_socket;
     connections[connection_count].address = server_addr;
-    connections[connection_count].is_outgoing = 1; // Đánh dấu là socket đi
+    connections[connection_count].is_outgoing = 1;
     connection_count++;
     pthread_mutex_unlock(&lock);
 
@@ -155,7 +144,6 @@ void terminate_connection(int id)
     int target_port = 0;
     int outgoing_socket = -1;
 
-    // Tìm IP và port tương ứng với ID trong danh sách hiển thị
     for (int i = 0; i < connection_count; i++)
     {
         char *ip = inet_ntoa(connections[i].address.sin_addr);
@@ -191,7 +179,6 @@ void terminate_connection(int id)
         return;
     }
 
-    // Tìm socket đi (is_outgoing = 1) để gửi tin nhắn TERMINATE
     for (int i = 0; i < connection_count; i++)
     {
         if (strcmp(inet_ntoa(connections[i].address.sin_addr), target_ip) == 0 &&
@@ -203,7 +190,6 @@ void terminate_connection(int id)
         }
     }
 
-    // Gửi tin nhắn TERMINATE qua socket đi (nếu có)
     if (outgoing_socket != -1)
     {
         const char *terminate_msg = "TERMINATE";
@@ -217,7 +203,6 @@ void terminate_connection(int id)
         }
     }
 
-    // Đóng tất cả socket liên quan đến peer này
     for (int i = 0; i < connection_count; i++)
     {
         if (strcmp(inet_ntoa(connections[i].address.sin_addr), target_ip) == 0 &&
@@ -245,7 +230,6 @@ void send_message(int id, char *message)
     int target_port = 0;
     int target_socket = -1;
 
-    // Tìm IP và port tương ứng với ID trong danh sách hiển thị
     for (int i = 0; i < connection_count; i++)
     {
         char *ip = inet_ntoa(connections[i].address.sin_addr);
@@ -281,7 +265,6 @@ void send_message(int id, char *message)
         return;
     }
 
-    // Tìm socket đi (is_outgoing = 1) để gửi tin nhắn
     for (int i = 0; i < connection_count; i++)
     {
         if (strcmp(inet_ntoa(connections[i].address.sin_addr), target_ip) == 0 &&
@@ -300,7 +283,6 @@ void send_message(int id, char *message)
         return;
     }
 
-    // Gửi tin nhắn qua socket đi
     if (send(target_socket, message, strlen(message), 0) < 0)
     {
         perror("Message send failed");
@@ -321,19 +303,13 @@ void *receive_messages(void *arg)
     int max_sd, activity, new_socket;
     char buffer[BUFFER_SIZE];
 
-    while (1)
+    while (running)
     {
-        // Sử dụng select để theo dõi các socket đến và đi
-        // cùng một lúc (server_socket và các connection)
         FD_ZERO(&read_fds);
         FD_SET(server_socket, &read_fds);
         max_sd = server_socket;
 
         pthread_mutex_lock(&lock);
-        // Thêm các socket đến và đi vào read_fds trên mỗi peer vào fd_set để theo dõi
-        // peer A: connections[0], connections[1], ...
-        //         (socket đi)   , (socket đến)  , ...
-        // theo dõi các connection của 1 peer
         for (int i = 0; i < connection_count; i++)
         {
             FD_SET(connections[i].socket, &read_fds);
@@ -342,11 +318,6 @@ void *receive_messages(void *arg)
         }
         pthread_mutex_unlock(&lock);
 
-        // Chờ cho hoạt động trên các socket
-        // timeout = NULL: chờ vô hạn
-        // trả về số socket có hoạt động
-        // Mục đích: kiểm tra xem có dữ liệu đến (message, connection),
-        // xử lí đồng thời nhiều socket mà không cần tạo nhiều thread
         activity = select(max_sd + 1, &read_fds, NULL, NULL, NULL);
         if (activity < 0)
         {
@@ -354,24 +325,20 @@ void *receive_messages(void *arg)
             continue;
         }
 
-        // Kiểm tra xem server_socket có sự kiện để đọc không sau khi select trả về
-        // Dùng cho server kiểm tra có connection mới không
         if (FD_ISSET(server_socket, &read_fds))
         {
             addr_len = sizeof(client_addr);
-            //
             new_socket = accept(server_socket, (struct sockaddr *)&client_addr, &addr_len);
             if (new_socket >= 0)
             {
                 pthread_mutex_lock(&lock);
                 connections[connection_count].socket = new_socket;
                 connections[connection_count].address = client_addr;
-                connections[connection_count].is_outgoing = 0; // Đánh dấu là socket đến
+                connections[connection_count].is_outgoing = 0;
                 connection_count++;
-                int new_connection_index = connection_count - 1; // Lưu chỉ số của kết nối mới
+                int new_connection_index = connection_count - 1;
                 pthread_mutex_unlock(&lock);
 
-                // Nhận tin nhắn chứa port lắng nghe về việc có connection mới
                 char port_msg[32];
                 int bytes_received = recv(new_socket, port_msg, sizeof(port_msg) - 1, 0);
                 if (bytes_received > 0)
@@ -380,19 +347,15 @@ void *receive_messages(void *arg)
                     printf("Debug: Received PORT message: %s\n", port_msg);
                     if (strncmp(port_msg, "PORT:", 5) == 0)
                     {
-                        int peer_listening_port = atoi(port_msg + 5); // Lấy port từ tin nhắn
+                        int peer_listening_port = atoi(port_msg + 5);
                         char peer_ip[16];
                         strcpy(peer_ip, inet_ntoa(client_addr.sin_addr));
-
-                        // In thông báo với port lắng nghe
                         printf("New connection from %s:%d\n", peer_ip, peer_listening_port);
 
-                        // Cập nhật port trong connections để sử dụng port lắng nghe
                         pthread_mutex_lock(&lock);
                         connections[new_connection_index].address.sin_port = htons(peer_listening_port);
                         pthread_mutex_unlock(&lock);
 
-                        // Kiểm tra trùng lặp
                         int is_duplicate = 0;
                         pthread_mutex_lock(&lock);
                         for (int i = 0; i < connection_count - 1; i++)
@@ -406,7 +369,6 @@ void *receive_messages(void *arg)
                         }
                         pthread_mutex_unlock(&lock);
 
-                        // Connect back nếu không trùng lặp và không phải tự kết nối
                         if (peer_listening_port != listening_port && !is_duplicate)
                         {
                             printf("Attempting to connect back to %s:%d\n", peer_ip, peer_listening_port);
@@ -435,14 +397,12 @@ void *receive_messages(void *arg)
                 if (bytes_received > 0)
                 {
                     buffer[bytes_received] = '\0';
-                    // Nếu nhận được tin nhắn TERMINATE thì đóng kết nối
                     if (strcmp(buffer, "TERMINATE") == 0)
                     {
                         char *peer_ip = inet_ntoa(connections[i].address.sin_addr);
                         int peer_port = ntohs(connections[i].address.sin_port);
                         printf("Received TERMINATE from %s:%d, closing connection...\n", peer_ip, peer_port);
 
-                        // Đóng tất cả socket liên quan đến peer này
                         for (int j = 0; j < connection_count; j++)
                         {
                             if (strcmp(inet_ntoa(connections[j].address.sin_addr), peer_ip) == 0 &&
@@ -458,7 +418,6 @@ void *receive_messages(void *arg)
                             }
                         }
                     }
-                    // this case receive message from client
                     else
                     {
                         printf("Debug: Received %d bytes on socket %d (is_outgoing: %d)\n", bytes_received, connections[i].socket, connections[i].is_outgoing);
@@ -471,7 +430,6 @@ void *receive_messages(void *arg)
                     int peer_port = ntohs(connections[i].address.sin_port);
                     printf("Connection closed by %s:%d\n", peer_ip, peer_port);
 
-                    // Đóng tất cả socket liên quan đến peer này
                     for (int j = 0; j < connection_count; j++)
                     {
                         if (strcmp(inet_ntoa(connections[j].address.sin_addr), peer_ip) == 0 &&
@@ -501,15 +459,12 @@ void *receive_messages(void *arg)
 
 int main(int argc, char *argv[])
 {
-    // Check for port argument
     if (argc != 2)
     {
         printf("Usage: %s <port>\n", argv[0]);
         return 1;
     }
 
-    // Create server socket
-    listening_port = atoi(argv[1]);
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket < 0)
     {
@@ -517,9 +472,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // Thêm tùy chọn SO_REUSEADDR giúp tránh lỗi "Address already in use"
-    // xung đột cổng khi khởi động lại nhiều lần chương trình khi port đó trong
-    // trạng thái TIME_WAIT
     int opt = 1;
     if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
     {
@@ -528,8 +480,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // Bind server socket to port
-    struct sockaddr_in server_addr = {AF_INET, htons(listening_port), inet_addr("192.168.90.135")};
+    struct sockaddr_in server_addr = {AF_INET, htons(atoi(argv[1])), inet_addr("192.168.90.135")};
+    listening_port = atoi(argv[1]);
     if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
     {
         perror("Bind failed");
@@ -537,7 +489,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // Listen for incoming connections
     if (listen(server_socket, MAX_CLIENTS) < 0)
     {
         perror("Listen failed");
@@ -546,7 +497,6 @@ int main(int argc, char *argv[])
     }
     printf("Chat server running on port %d...\n", listening_port);
 
-    // Create thread to receive messages
     pthread_mutex_init(&lock, NULL);
     pthread_t recv_thread;
     if (pthread_create(&recv_thread, NULL, receive_messages, NULL) != 0)
@@ -554,6 +504,7 @@ int main(int argc, char *argv[])
         perror("Thread creation failed");
         return 1;
     }
+    pthread_detach(recv_thread);
 
     char command[BUFFER_SIZE];
     while (1)
@@ -562,14 +513,20 @@ int main(int argc, char *argv[])
         fgets(command, BUFFER_SIZE, stdin);
         command[strcspn(command, "\n")] = 0;
 
-        if (strncmp(command, "exit", 4) == 0)
+        if (strncmp(command, "exitt", 5) == 0)
         {
             printf("Closing all connections and exiting...\n");
+            running = 0;
+        
             for (int i = 0; i < connection_count; i++)
                 close(connections[i].socket);
             close(server_socket);
+        
+            pthread_cancel(recv_thread); // Buộc dừng thread
+            usleep(100000);
+        
             pthread_mutex_destroy(&lock);
-            exit(0);
+            return 0;
         }
         else if (strncmp(command, "help", 4) == 0)
             print_help();

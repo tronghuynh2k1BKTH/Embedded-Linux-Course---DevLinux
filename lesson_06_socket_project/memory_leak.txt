@@ -1,22 +1,9 @@
-==181133== HEAP SUMMARY:
-==181133==     in use at exit: 272 bytes in 1 blocks
-==181133==   total heap usage: 3 allocs, 2 frees, 2,320 bytes allocated
-==181133== 
-==181133== 272 bytes in 1 blocks are possibly lost in loss record 1 of 1
-==181133==    at 0x488C0AC: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-arm64-linux.so)
-==181133==    by 0x400F553: calloc (rtld-malloc.h:44)
-==181133==    by 0x400F553: allocate_dtv (dl-tls.c:370)
-==181133==    by 0x400FF5F: _dl_allocate_tls (dl-tls.c:629)
-==181133==    by 0x4946387: allocate_stack (allocatestack.c:429)
-==181133==    by 0x4946387: pthread_create@@GLIBC_2.34 (pthread_create.c:655)
-==181133==    by 0x10AEFB: main (in /home/uhuynh/workspace/Embedded-Linux-Course---DevLinux/lesson_06_socket_project/chat)
-==181133== 
-==181133== LEAK SUMMARY:
-==181133==    definitely lost: 0 bytes in 0 blocks
-==181133==    indirectly lost: 0 bytes in 0 blocks
-==181133==      possibly lost: 272 bytes in 1 blocks
-==181133==    still reachable: 0 bytes in 0 blocks
-==181133==         suppressed: 0 bytes in 0 blocks
-==181133== 
-==181133== For lists of detected and suppressed errors, rerun with: -s
-==181133== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+Closing all connections and exiting...
+==183173== 
+==183173== HEAP SUMMARY:
+==183173==     in use at exit: 0 bytes in 0 blocks
+==183173==   total heap usage: 10 allocs, 10 frees, 6,552 bytes allocated
+==183173== 
+==183173== All heap blocks were freed -- no leaks are possible
+==183173== 
+==183173== For lists of detected and suppressed errors, rerun with: -s
