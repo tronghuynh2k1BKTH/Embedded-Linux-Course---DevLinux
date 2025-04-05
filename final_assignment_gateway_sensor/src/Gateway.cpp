@@ -3,9 +3,9 @@
 #include <iostream>
 #include <unistd.h>
 
-Gateway::Gateway()
+Gateway::Gateway(int port)
     : sensor_data(10), // Hỗ trợ tối đa 10 sensor
-      conn_mgr(sensor_data),
+      conn_mgr(port, sensor_data), // Truyền port vào ConnectionManager
       data_mgr(sensor_data),
       storage_mgr(sensor_data) {
     // Create Log Process using fork() (Req 1)
@@ -34,12 +34,10 @@ Gateway::Gateway()
 }
 
 void Gateway::run() {
-    // Create 3 threads for the managers
     conn_thread = std::thread(&ConnectionManager::run, &conn_mgr);
     data_thread = std::thread(&DataManager::run, &data_mgr);
     storage_thread = std::thread(&StorageManager::run, &storage_mgr);
 
-    // Wait for threads to finish
     conn_thread.join();
     data_thread.join();
     storage_thread.join();
@@ -48,11 +46,17 @@ void Gateway::run() {
     std::cout.flush();
 }
 
-int main() {
-    std::cout << "Starting Main Process (PID: " << getpid() << ")\n";
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <port>\n";
+        return 1;
+    }
+
+    int port = std::stoi(argv[1]); // Lấy port từ command-line
+    std::cout << "Starting Main Process (PID: " << getpid() << ") on port " << port << "\n";
     std::cout.flush();
 
-    Gateway gateway;
+    Gateway gateway(port);
     gateway.run();
 
     return 0;

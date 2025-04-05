@@ -6,10 +6,11 @@
 
 class ConnectionManager {
 public:
-    ConnectionManager(SensorData& sensor_data);
+    ConnectionManager(int port, SensorData& sensor_data); // Thêm port
     void run();
 
 private:
+    int port;
     SensorData& sensor_data;
 };
 

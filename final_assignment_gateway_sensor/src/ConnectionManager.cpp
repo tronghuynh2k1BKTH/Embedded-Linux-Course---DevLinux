@@ -1,16 +1,83 @@
 // src/ConnectionManager.cpp
 #include "../header/ConnectionManager.h"
 #include <iostream>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <unistd.h>
+#include <cstring>
 
-ConnectionManager::ConnectionManager(SensorData& sensor_data) : sensor_data(sensor_data) {}
+ConnectionManager::ConnectionManager(int port, SensorData& sensor_data)
+    : port(port), sensor_data(sensor_data) {}
 
 void ConnectionManager::run() {
-    for (int i = 0; i < 5; i++) {
-        std::cout << "Connection Manager running, iteration " << i + 1 << "\n";
-        std::cout.flush();
-        sleep(1);
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_fd < 0) {
+        std::cerr << "Connection Manager: Failed to create socket\n";
+        std::cerr.flush();
+        return;
     }
-    std::cout << "Connection Manager exiting\n";
+
+    int opt = 1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+        std::cerr << "Connection Manager: Failed to set socket options\n";
+        std::cerr.flush();
+        close(server_fd);
+        return;
+    }
+
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(port);
+
+    if (bind(server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+        std::cerr << "Connection Manager: Failed to bind to port " << port << "\n";
+        std::cerr.flush();
+        close(server_fd);
+        return;
+    }
+
+    if (listen(server_fd, 5) < 0) {
+        std::cerr << "Connection Manager: Failed to listen\n";
+        std::cerr.flush();
+        close(server_fd);
+        return;
+    }
+
+    std::cout << "Connection Manager: Listening on port " << port << "\n";
     std::cout.flush();
+
+    while (true) {
+        struct sockaddr_in client_addr;
+        socklen_t client_len = sizeof(client_addr);
+        int client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_len);
+        if (client_fd < 0) {
+            std::cerr << "Connection Manager: Failed to accept connection\n";
+            std::cerr.flush();
+            continue;
+        }
+
+        std::cout << "Connection Manager: New connection accepted\n";
+        std::cout.flush();
+
+        // Đọc nhiều lần dữ liệu từ cùng một kết nối
+        while (true) {
+            char buffer[256];
+            int n = read(client_fd, buffer, 255);
+            if (n <= 0) {
+                // Kết nối bị đóng hoặc lỗi
+                std::cout << "Connection Manager: Connection closed by client\n";
+                std::cout.flush();
+                break;
+            }
+            buffer[n] = '\0';
+
+            std::cout << "Connection Manager: Received data: " << buffer << "\n";
+            std::cout.flush();
+        }
+
+        close(client_fd);
+    }
+
+    close(server_fd);
 }

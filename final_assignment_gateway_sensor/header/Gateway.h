@@ -10,11 +10,10 @@
 
 class Gateway {
 public:
-    Gateway();
+    Gateway(int port); // Thêm tham số port
     void run();
 
 private:
-    // SensorData object to manage sensor data
     SensorData sensor_data;
     ConnectionManager conn_mgr;
     DataManager data_mgr;
