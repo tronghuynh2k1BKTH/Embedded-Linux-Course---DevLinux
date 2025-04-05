@@ -1,9 +1,13 @@
 // src/SensorData.cpp
 #include "../header/SensorData.h"
 #include <ctime>
+#include <iostream>
 
 SensorData::SensorData(size_t max_sensors) {
-    readings.resize(max_sensors); // Khởi tạo vector với kích thước max_sensors
+    readings.resize(max_sensors);
+    for (size_t i = 0; i < max_sensors; i++) {
+        readings[i].id = static_cast<int>(i);
+    }
 }
 
 std::string SensorData::getCurrentTimestamp() {
@@ -14,26 +18,54 @@ std::string SensorData::getCurrentTimestamp() {
 }
 
 void SensorData::addReading(int id, double temperature) {
-    std::lock_guard<std::mutex> lock(data_mutex); // Khóa mutex
-    if (id >= 0 && id < static_cast<int>(readings.size())) {
-        readings[id].id = id;
-        readings[id].temperature = temperature;
-        readings[id].timestamp = getCurrentTimestamp();
-        readings[id].valid = true;
+    std::lock_guard<std::mutex> lock(data_mutex);
+    if (id < 0 || id >= static_cast<int>(readings.size())) {
+        std::cerr << "SensorData: Invalid sensor ID: " << id << "\n";
+        std::cerr.flush();
+        return;
     }
+
+    std::string timestamp = getCurrentTimestamp();
+    readings[id].temperatures.push_back(temperature);
+    readings[id].timestamps.push_back(timestamp);
+    readings[id].valid.push_back(true);
+
+    std::cout << "SensorData: Added reading - ID: " << id << ", Temp: " << temperature
+              << ", Timestamp: " << timestamp << "\n";
+    std::cout.flush();
 }
 
 SensorReading SensorData::getReading(int id) {
-    std::lock_guard<std::mutex> lock(data_mutex); // Khóa mutex
-    if (id >= 0 && id < static_cast<int>(readings.size())) {
-        return readings[id];
+    std::lock_guard<std::mutex> lock(data_mutex);
+    if (id < 0 || id >= static_cast<int>(readings.size())) {
+        std::cerr << "SensorData: Invalid sensor ID: " << id << "\n";
+        std::cerr.flush();
+        return SensorReading();
     }
-    return SensorReading(); // Trả về giá trị mặc định nếu ID không hợp lệ
+    return readings[id];
 }
 
-void SensorData::markProcessed(int id) {
-    std::lock_guard<std::mutex> lock(data_mutex); // Khóa mutex
-    if (id >= 0 && id < static_cast<int>(readings.size())) {
-        readings[id].valid = false;
+void SensorData::markProcessed(int id, size_t index) {
+    std::lock_guard<std::mutex> lock(data_mutex);
+    if (id < 0 || id >= static_cast<int>(readings.size())) {
+        std::cerr << "SensorData: Invalid sensor ID: " << id << "\n";
+        std::cerr.flush();
+        return;
     }
+    if (index >= readings[id].valid.size()) {
+        std::cerr << "SensorData: Invalid index: " << index << " for sensor ID: " << id << "\n";
+        std::cerr.flush();
+        return;
+    }
+    readings[id].valid[index] = false;
+}
+
+size_t SensorData::getReadingCount(int id) {
+    std::lock_guard<std::mutex> lock(data_mutex);
+    if (id < 0 || id >= static_cast<int>(readings.size())) {
+        std::cerr << "SensorData: Invalid sensor ID: " << id << "\n";
+        std::cerr.flush();
+        return 0;
+    }
+    return readings[id].temperatures.size();
 }

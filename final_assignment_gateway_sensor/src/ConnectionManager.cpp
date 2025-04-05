@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <cstring>
+#include <sstream>
 
 ConnectionManager::ConnectionManager(int port, SensorData& sensor_data)
     : port(port), sensor_data(sensor_data) {}
@@ -60,20 +61,59 @@ void ConnectionManager::run() {
         std::cout << "Connection Manager: New connection accepted\n";
         std::cout.flush();
 
-        // Đọc nhiều lần dữ liệu từ cùng một kết nối
         while (true) {
             char buffer[256];
             int n = read(client_fd, buffer, 255);
             if (n <= 0) {
-                // Kết nối bị đóng hoặc lỗi
                 std::cout << "Connection Manager: Connection closed by client\n";
                 std::cout.flush();
                 break;
             }
             buffer[n] = '\0';
 
-            std::cout << "Connection Manager: Received data: " << buffer << "\n";
+            // Parse dữ liệu: "ID:<id>,Temp:<temperature>"
+            std::string data(buffer);
+            std::cout << "Connection Manager: Received data: " << data << "\n";
             std::cout.flush();
+
+            int id = -1;
+            double temp = 0.0;
+            std::stringstream ss(data);
+            std::string token;
+
+            // Parse ID
+            if (std::getline(ss, token, ',')) {
+                if (token.substr(0, 3) == "ID:") {
+                    try {
+                        id = std::stoi(token.substr(3));
+                    } catch (...) {
+                        std::cerr << "Connection Manager: Invalid ID format: " << token << "\n";
+                        std::cerr.flush();
+                        continue;
+                    }
+                }
+            }
+
+            // Parse Temperature
+            if (std::getline(ss, token, ',')) {
+                if (token.substr(0, 5) == "Temp:") {
+                    try {
+                        temp = std::stod(token.substr(5));
+                    } catch (...) {
+                        std::cerr << "Connection Manager: Invalid temperature format: " << token << "\n";
+                        std::cerr.flush();
+                        continue;
+                    }
+                }
+            }
+
+            // Lưu vào SensorData
+            if (id >= 0) {
+                sensor_data.addReading(id, temp);
+            } else {
+                std::cerr << "Connection Manager: Invalid sensor ID: " << id << "\n";
+                std::cerr.flush();
+            }
         }
 
         close(client_fd);

@@ -7,11 +7,11 @@
 #include <mutex>
 
 struct SensorReading {
-    int id;              // Sensor ID
-    double temperature;  // Temperature value
-    std::string timestamp; // Timestamp of the reading
-    bool valid;          // Flag to indicate if the data is new/unprocessedl, with true meaning new/unprocessed
-    SensorReading() : id(-1), temperature(0.0), timestamp(""), valid(false) {}
+    int id;                        // Sensor ID
+    std::vector<double> temperatures; // Danh sách các giá trị nhiệt độ
+    std::vector<std::string> timestamps; // Danh sách timestamp tương ứng
+    std::vector<bool> valid;       // Trạng thái valid cho từng giá trị
+    SensorReading() : id(-1) {}
 };
 
 class SensorData {
@@ -19,7 +19,8 @@ public:
     SensorData(size_t max_sensors); // Constructor: max_sensors là số lượng sensor tối đa
     void addReading(int id, double temperature); // Thêm dữ liệu cảm biến
     SensorReading getReading(int id); // Lấy dữ liệu cảm biến
-    void markProcessed(int id); // Đánh dấu dữ liệu đã được xử lý
+    void markProcessed(int id, size_t index); // Đánh dấu một giá trị cụ thể đã được xử lý
+    size_t getReadingCount(int id); // Lấy số lượng giá trị nhiệt độ của sensor
 
 private:
     std::vector<SensorReading> readings; // Vector lưu trữ dữ liệu cảm biến
