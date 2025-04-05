@@ -71,7 +71,6 @@ void ConnectionManager::run() {
             }
             buffer[n] = '\0';
 
-            // Parse dữ liệu: "ID:<id>,Temp:<temperature>"
             std::string data(buffer);
             std::cout << "Connection Manager: Received data: " << data << "\n";
             std::cout.flush();
@@ -81,7 +80,6 @@ void ConnectionManager::run() {
             std::stringstream ss(data);
             std::string token;
 
-            // Parse ID
             if (std::getline(ss, token, ',')) {
                 if (token.substr(0, 3) == "ID:") {
                     try {
@@ -94,7 +92,6 @@ void ConnectionManager::run() {
                 }
             }
 
-            // Parse Temperature
             if (std::getline(ss, token, ',')) {
                 if (token.substr(0, 5) == "Temp:") {
                     try {
@@ -107,7 +104,6 @@ void ConnectionManager::run() {
                 }
             }
 
-            // Lưu vào SensorData
             if (id >= 0) {
                 sensor_data.addReading(id, temp);
             } else {
