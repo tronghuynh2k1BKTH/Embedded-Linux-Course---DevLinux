@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(0.0, 40.0);
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 20; i++) {
         double temp = dis(gen);
         std::stringstream msg;
         msg << "ID:" << sensor_id << ",Temp:" << temp;
@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
         std::cout << "Sensor Node " << sensor_id << ": Sent data: " << data << "\n";
         std::cout.flush();
 
-        sleep(1);
+        sleep(0.5);
     }
 
     close(sock);
